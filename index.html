@@ -1,27 +1,135 @@
-<!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Gönderileri</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Sayfam</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Blog Gönderileri</h1>
-        <form id="postForm">
-            <input type="text" id="title" placeholder="Başlık" required>
-            <textarea id="content" placeholder="İçerik" required></textarea>
-            <input type="text" id="author" placeholder="Yazar" required>
-            <button type="submit">Gönderiyi Ekle</button>
-        </form>
+  <div class="container">
+    <header>
+      <h1>Bloglarımız</h1>
+    </header>
+    <section class="form-section">
+      <h2>Yeni Gönderi Ekle</h2>
+      <form id="createPostForm">
+        <input type="text" id="title" name="title" placeholder="Başlık" required>
+        <textarea id="content" name="content" rows="4" placeholder="İçerik" required></textarea>
+        <input type="text" id="author" name="author" placeholder="Yazar" required>
+        <button type="submit" class="submit-btn">Gönderiyi Ekle</button>
+      </form>
+    </section>
+    <section class="posts-section">
+      <h2>Gönderiler</h2>
+      <ul id="postsList">
+       
+      </ul>
+    </section>
+  </div>
+  <script>
+    let editingPostId = null; // Düzenleme için global ID değişkeni
+    // Yeni gönderi ekleme formu
+    document.getElementById('createPostForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const content = document.getElementById('content').value;
+      const author = document.getElementById('author').value;
+      const postData = { title, content, author };
+      if (editingPostId) {
+        // Düzenleme işlemi
+        fetch(`http://localhost:4000/api/posts/${editingPostId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postData)
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Gönderi güncellendi:', data);
+          fetchPosts(); // Listeyi güncelle
+          resetForm(); // Formu sıfırla
+        })
+        .catch(error => console.error('Hata:', error));
+      } else {
+        // Yeni gönderi ekleme
+        fetch('http://localhost:4000/api/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postData)
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Yeni gönderi eklendi:', data);
+          fetchPosts(); // Yeni gönderiyi listeye ekle
+          resetForm(); // Formu sıfırla
+        })
+        .catch(error => console.error('Hata:', error));
+      }
+    });
+    // Gönderileri listele
+    function fetchPosts() {
+      fetch('http://localhost:4000/api/posts')
+        .then(response => response.json())
+        .then(posts => {
+          const postsList = document.getElementById('postsList');
+          postsList.innerHTML = '';
 
-        <h2>Gönderiler</h2>
-        <ul id="postsList">
-           
-        </ul>
-    </div>
+          posts.forEach(post => {
+            const li = document.createElement('li');
+            li.classList.add('post-item');
+            li.innerHTML = `
+              <div class="post-header">
+                <h3>${post.title}</h3>
+                <span class="author">Yazar: ${post.author}</span>
+              </div>
+              <p class="post-content">${post.content}</p>
+              <div class="post-actions">
+                <button onclick="deletePost('${post.id}')">Sil</button>
+                <button onclick="editPost('${post.id}', '${post.title}', '${post.content}', '${post.author}')">Düzenle</button>
+              </div>
+            `;
+            postsList.appendChild(li);
+          });
+        })
+        .catch(error => console.error('Hata:', error));
+    }
+    // Gönderi silme
+    function deletePost(postId) {
+      fetch(`http://localhost:4000/api/posts/${postId}`, {
+        method: 'DELETE'
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Gönderi silindi:', data);
+        fetchPosts(); // Listeyi güncelle
+      })
+      .catch(error => console.error('Hata:', error));
+    }
+    // Gönderi düzenleme
+    function editPost(postId, currentTitle, currentContent, currentAuthor) {
+      // Düzenlemek için formu önceden doldur
+      document.getElementById('title').value = currentTitle;
+      document.getElementById('content').value = currentContent;
+      document.getElementById('author').value = currentAuthor;
 
-    <script src="server.js"></script>
+      // Düzenleme moduna geç
+      editingPostId = postId;
+      document.querySelector('.submit-btn').textContent = "Gönderiyi Güncelle";
+    }
+    // Formu sıfırlama
+    function resetForm() {
+      document.getElementById('title').value = '';
+      document.getElementById('content').value = '';
+      document.getElementById('author').value = '';
+      editingPostId = null;
+      document.querySelector('.submit-btn').textContent = "Gönderiyi Ekle"; // Buton metnini eski haline getir
+    }
+    // Sayfa yüklendiğinde gönderileri çek
+    window.onload = fetchPosts;
+  </script>
 </body>
 </html>

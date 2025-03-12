@@ -14,11 +14,10 @@
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "rethinkdb": "^2.4.2",
     "rethinkdbdash": "^2.3.31"
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "rethinkdb": "^2.4.3"
+    "rethinkdb": "^2.4.2"
   }
 }
