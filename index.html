@@ -22,14 +22,12 @@
     </section>
     <section class="posts-section">
       <h2>Gönderiler</h2>
-      <ul id="postsList">
-       
+      <ul id="postsList">       
       </ul>
     </section>
   </div>
   <script>
-    let editingPostId = null; // Düzenleme için global ID değişkeni
-    // Yeni gönderi ekleme formu
+    let editingPostId = null;
     document.getElementById('createPostForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const title = document.getElementById('title').value;
@@ -37,7 +35,6 @@
       const author = document.getElementById('author').value;
       const postData = { title, content, author };
       if (editingPostId) {
-        // Düzenleme işlemi
         fetch(`http://localhost:4000/api/posts/${editingPostId}`, {
           method: 'PUT',
           headers: {
@@ -48,12 +45,11 @@
         .then(response => response.json())
         .then(data => {
           console.log('Gönderi güncellendi:', data);
-          fetchPosts(); // Listeyi güncelle
-          resetForm(); // Formu sıfırla
+          fetchPosts(); 
+          resetForm(); 
         })
         .catch(error => console.error('Hata:', error));
       } else {
-        // Yeni gönderi ekleme
         fetch('http://localhost:4000/api/posts', {
           method: 'POST',
           headers: {
@@ -64,20 +60,18 @@
         .then(response => response.json())
         .then(data => {
           console.log('Yeni gönderi eklendi:', data);
-          fetchPosts(); // Yeni gönderiyi listeye ekle
-          resetForm(); // Formu sıfırla
+          fetchPosts(); 
+          resetForm(); 
         })
         .catch(error => console.error('Hata:', error));
       }
     });
-    // Gönderileri listele
     function fetchPosts() {
       fetch('http://localhost:4000/api/posts')
         .then(response => response.json())
         .then(posts => {
           const postsList = document.getElementById('postsList');
           postsList.innerHTML = '';
-
           posts.forEach(post => {
             const li = document.createElement('li');
             li.classList.add('post-item');
@@ -97,7 +91,6 @@
         })
         .catch(error => console.error('Hata:', error));
     }
-    // Gönderi silme
     function deletePost(postId) {
       fetch(`http://localhost:4000/api/posts/${postId}`, {
         method: 'DELETE'
@@ -105,30 +98,24 @@
       .then(response => response.json())
       .then(data => {
         console.log('Gönderi silindi:', data);
-        fetchPosts(); // Listeyi güncelle
+        fetchPosts(); 
       })
       .catch(error => console.error('Hata:', error));
     }
-    // Gönderi düzenleme
     function editPost(postId, currentTitle, currentContent, currentAuthor) {
-      // Düzenlemek için formu önceden doldur
       document.getElementById('title').value = currentTitle;
       document.getElementById('content').value = currentContent;
       document.getElementById('author').value = currentAuthor;
-
-      // Düzenleme moduna geç
       editingPostId = postId;
       document.querySelector('.submit-btn').textContent = "Gönderiyi Güncelle";
     }
-    // Formu sıfırlama
     function resetForm() {
       document.getElementById('title').value = '';
       document.getElementById('content').value = '';
       document.getElementById('author').value = '';
       editingPostId = null;
-      document.querySelector('.submit-btn').textContent = "Gönderiyi Ekle"; // Buton metnini eski haline getir
+      document.querySelector('.submit-btn').textContent = "Gönderiyi Ekle"; 
     }
-    // Sayfa yüklendiğinde gönderileri çek
     window.onload = fetchPosts;
   </script>
 </body>
